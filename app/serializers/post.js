@@ -1,21 +1,38 @@
 import DS from 'ember-data';
 
-const { JSONSerializer, EmbeddedRecordsMixin } = DS;
+const { JSONAPISerializer } = DS;
 
-export default JSONSerializer.extend(EmbeddedRecordsMixin, {
-  attrs: {
-    tags: {
-      embedded: 'always'
-    }
-  },
+export default JSONAPISerializer.extend({
   normalizeFindAllResponse(store, primaryModelClass, payload, id, requestType) {
-    let newPayload = payload.data.map(({ id, attributes }) => {
-      return {
-        id,
-        ...attributes
+    payload.data.forEach((resource) => {
+      resource.relationships = {
+        tags: {
+          data: resource.attributes.tags.map((tag) => {
+            return {
+              id: tag.id,
+              type: 'tags'
+            };
+          })
+        }
       };
     });
 
-    return this._super(store, primaryModelClass, newPayload, id, requestType);
+    payload.included = payload.data
+      .map((resource) => {
+        return resource.attributes.tags;
+      })
+      .flat()
+      .map((tag) => {
+        let resource = {
+          id: tag.id,
+          type: 'tags'
+        };
+
+        delete tag.id;
+        resource.attributes = tag;
+        return resource;
+      });
+
+    return this._super(...arguments);
   }
 });
