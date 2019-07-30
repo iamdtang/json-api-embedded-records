@@ -1,5 +1,14 @@
-{{!-- The following component displays Ember's default welcome message. --}}
-<WelcomePage />
-{{!-- Feel free to remove this! --}}
-
-{{outlet}}
+<ul>
+  {{#each model as |post|}}
+    <li>
+      {{post.title}}
+      <ul>
+        {{#each post.tags as |tag|}}
+          <li>
+            {{tag.name}}
+          </li>
+        {{/each}}
+      </ul>
+    </li>
+  {{/each}}
+</ul>
